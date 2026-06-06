@@ -91,12 +91,12 @@ export const getUserDetails = async (req,res) => {
         return res.status(200).json(user);
     } catch (error) {
         console.error("getUserDetails error:", error);
+
+        //Access Token expired returns 401 error
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ message: "Access token expired" });
         }
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: "Invalid access token" });
-        }
+
         return res.status(500).json({ message: "Server error", error: error.message });
     }
     
@@ -105,6 +105,7 @@ export const getUserDetails = async (req,res) => {
 export const refreshAccessToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+      //Refresh token missing
     if (!refreshToken)
       return res.status(401).json({ message: "Refresh token missing" });
 
@@ -114,9 +115,10 @@ export const refreshAccessToken = async (req, res) => {
     const newAccessToken = generateAccessToken(user._id);
     res.status(200).json({ accessToken: newAccessToken });
   } catch (error) {
+      //Expired Refresh token
     return res
       .status(403)
-      .json({ message: "Invalid or expired refresh token", error });
+      .json({ message: "Expired refresh token", error });
   }
 };
 
